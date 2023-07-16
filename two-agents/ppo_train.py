@@ -80,7 +80,7 @@ if __name__ == "__main__":
 
     # AGENT 2------------------------------------------------------------
     # AGENT 2 ONLY PERFORM INFERENCE. YOU CAN MAKE IT RANDOM, OR INITIALIZE IT WITH A TRAINED NETWORK
-    agent_2: object = agent.Agent(envs).to(device)
+    agent_2 = agent.Agent(envs).to(device)
     if parameters["train"]["initialize_trained_agent_2"] == 1:
         state_dict_agent_2 = torch.load(
             parameters["train"]["agent_2_state_dict_path"],
