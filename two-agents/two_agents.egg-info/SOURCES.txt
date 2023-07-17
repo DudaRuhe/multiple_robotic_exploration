@@ -1,7 +1,0 @@
-README.md
-setup.py
-two_agents.egg-info/PKG-INFO
-two_agents.egg-info/SOURCES.txt
-two_agents.egg-info/dependency_links.txt
-two_agents.egg-info/requires.txt
-two_agents.egg-info/top_level.txt
