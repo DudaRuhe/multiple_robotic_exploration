@@ -17,7 +17,7 @@ class TwoAgentsEnv(gym.Env):
         "render_fps": parameters["visualization"]["FPS"],
     }
 
-    def __init__(self, render_mode=None, idx=None, num_robots=2):
+    def __init__(self, render_mode=None, idx=None,num_robots=None):
 
         with open(f"parameters.json", "r") as parameters_file:
             parameters = json.load(parameters_file)
@@ -71,17 +71,20 @@ class TwoAgentsEnv(gym.Env):
         self.explored_rate = 0.0  # goes to robot
         self.global_steps = 0.0  # goes to robot
         self.episode = 0
-        self.num_robots = num_robots
+        self.num_robots = parameters["env"]["num_robots"]
+        
 
         max_bound = self.n_cells_x
         if self.n_cells_y > self.n_cells_x:
             max_bound = self.n_cells_y
 
-        robot_name = "robot0"
-        robot_name1 = "robot1"
+        robot_names = []
+        for i in range(self.num_robots):
+                robot_names.append("robot"+str(i))
+	
         self.observation_space = spaces.Dict(
             {
-                robot_name: spaces.Dict(
+                robot_names[i]: spaces.Dict(
                     {
                         "proximity_regions": spaces.Box(
                             low=1.0,
@@ -102,31 +105,11 @@ class TwoAgentsEnv(gym.Env):
                             dtype=int,
                         ),
                     }
-                ),
-                robot_name1: spaces.Dict(
-                    {
-                        "proximity_regions": spaces.Box(
-                            low=1.0,
-                            high=4.0,
-                            shape=(self.n_proximity_regions,),
-                            dtype=int,
-                        ),
-                        "trajectory": spaces.Box(
-                            low=-max_bound - 1,
-                            high=max_bound - 1,
-                            shape=(self.n_trajectory_points, 2),
-                            dtype=int,
-                        ),
-                        "other_robots_trajectories": spaces.Box(
-                            low=-max_bound - 1,
-                            high=max_bound - 1,
-                            shape=(self.n_others_trajectory_points, 2),
-                            dtype=int,
-                        ),
-                    }
-                ),
+                )
+                for i in range(2)
             }
         )
+     
         # We have 4 actions, corresponding to "right", "up", "left", "down"
         self.action_space = spaces.Discrete(4)
 
@@ -646,23 +629,20 @@ class TwoAgentsEnv(gym.Env):
         self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
         self.robots[0]._other_agents_trajectory = self.robots[1]._agent_trajectory
 
+        info = {}
         for i in range(self.num_robots):
             self.robots[i]._get_laser_measurements(
                 self.grid_matrix, self.n_cells_x, self.n_cells_y
             )  # owner is robot
 
             observation = self.robots[i]._get_obs()  # owner is robot
+            info_robot = self.robots[i]._get_info()  # owner is robot
             robot_name = "robot" + str(i)
             observations[robot_name] = observation
+            info[robot_name] = info_robot
+            self.robots[i].n_steps = 0
 
-        info = {}
-        info_robot_1 = self.robots[0]._get_info()  # owner is robot
-        info_robot_2 = self.robots[1]._get_info()
-        info["robot1"] = info_robot_1
-        info["robot2"] = info_robot_2
-
-        self.robots[0].n_steps = 0
-        self.robots[1].n_steps = 0
+     
 
         if self.render_mode == "human":
             self._render_frame()
@@ -713,7 +693,7 @@ class TwoAgentsEnv(gym.Env):
                     self.robots[1]._visited_x,
                     self.robots[1]._visited_y,
                 )
-            elif i == 1:
+            elif i >= 1:
                 # print("ROBOT 1")
                 new_regions[i] = self.robots[i].update_trajectory(
                     self.n_trajectory_points,
@@ -725,6 +705,7 @@ class TwoAgentsEnv(gym.Env):
                     self.robots[0]._visited_x,
                     self.robots[0]._visited_y,
                 )
+        
 
         # SHARE TRAJECTORY BETWEEN ROBOTS
         self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
