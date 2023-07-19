@@ -15,10 +15,10 @@ from modules import agent, environment
 
 if __name__ == "__main__":
 
-    num_robots = 2
-
     with open(f"parameters.json", "r") as parameters_file:
         parameters = json.load(parameters_file)
+
+    num_robots = parameters["env"]["num_robots"]
 
     if parameters["train"]["finetune_agent_1"] == 1:
         run_name = (
