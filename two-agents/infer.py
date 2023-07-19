@@ -12,11 +12,11 @@ from modules import agent, environment
 
 if __name__ == "__main__":
 
-    num_robots = 2
-
     with open(f"parameters.json", "r") as parameters_file:
         parameters = json.load(parameters_file)
 
+    num_robots = parameters["env"]["num_robots"]
+    
     # TRY NOT TO MODIFY: seeding
     seed = parameters["env"]["seed"]
     random.seed(seed)
