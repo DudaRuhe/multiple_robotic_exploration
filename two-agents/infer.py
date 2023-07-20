@@ -93,10 +93,14 @@ if __name__ == "__main__":
     next_done = torch.zeros(1).to(device)
     done = 0
     inferring = 1
-    path_len_robot_1 = []
-    path_len_robot_2 = []
-    collisions_robot_1 = 0
-    collisions_robot_2 = 0
+    path_len_robots = {
+        "robot"+str(i): []
+        for i in range(num_robots)
+    }
+    collisions_robots = {
+        "robot"+str(i): 0
+        for i in range(num_robots)
+    }
     exploration_rate = []
     while inferring:
         # ALGO LOGIC: action logic
@@ -144,27 +148,24 @@ if __name__ == "__main__":
 
         if next_done.any():
 
-            if info[0]["robot1"]["collision"]:
-                collisions_robot_1 += 1
+            for i in range(num_robots):
+                robot_name = "robot"+str(i)
+                if info[0][robot_name]["collision"]:
+                    collisions_robots[robot_name] += 1
+                path_len_robots[robot_name].append(info[0][robot_name]["path_lenght"])
 
-            if info[0]["robot2"]["collision"]:
-                collisions_robot_2 += 1
-            path_len_robot_1.append(info[0]["robot1"]["path_lenght"])
-            path_len_robot_2.append(info[0]["robot2"]["path_lenght"])
-            exploration_rate.append(info[0]["robot1"]["explored_rate"])
-            if len(path_len_robot_1) == 50:
+            exploration_rate.append(info[0]["robot0"]["explored_rate"])
+            
+            if len(path_len_robots["robot0"]) == 50:
                 envs.close()
                 inferring = 0
 
-
-print(f"COLLISIONS ROBOT 1: {collisions_robot_1}")
-print(f"COLLISIONS ROBOT 2: {collisions_robot_2}")
-print("\n ROBOT 1")
-print(f"PATH LEN MEAN: {(np.mean(path_len_robot_1)*20)/100}")
-print(f"PATH LEN STD: {(np.std(path_len_robot_1)*20)/100}")
-print("\n ROBOT 2")
-print(f"PATH LEN MEAN: {(np.mean(path_len_robot_2)*20)/100}")
-print(f"PATH LEN STD: {(np.std(path_len_robot_2)*20)/100}")
+for i in range(num_robots):
+    robot_name = "robot" + str(i)
+    print(f"\n ROBOT {i+1}")
+    print(f"COLLISIONS ROBOT {i+1}: {collisions_robots[robot_name]}")
+    print(f"PATH LEN MEAN: {(np.mean(path_len_robots[robot_name])*20)/100}")
+    print(f"PATH LEN STD: {(np.std(path_len_robots[robot_name])*20)/100}")
 print("\n")
 print(f"EXPLORATION RATE MEAN: {np.mean(exploration_rate)}")
 print(f"EXPLORATION STD: {np.std(exploration_rate)}")
