@@ -57,15 +57,17 @@ if __name__ == "__main__":
     agent_1.eval()
     # ------------------------------------------------------------------------
 
-    # AGENT 2------------------------------------------------------------
-    agent_2 = agent.Agent(envs).to(device)
-    print(np.shape(agent_2))
-    state_dict_agent_2 = torch.load(
+    # THE OTHERS AGENTS ------------------------------------------------------------
+    agents = []
+    for i in range(num_robots-1):
+        agents.append(agent.Agent(envs).to(device))
+        state_dict_agents = torch.load(
         parameters["infer"]["agent_2_model_path"],
         map_location=device,
-    )
-    agent_2.load_state_dict(state_dict_agent_2)
-    agent_2.eval()
+        )
+        agents[i].load_state_dict(state_dict_agents)
+        agents[i].eval()
+
     # ---------------------------------------------------------------------
 
     # TRY NOT TO MODIFY: start the game
@@ -74,22 +76,22 @@ if __name__ == "__main__":
 
     robot_obs, _ = envs.reset()
     next_obs = robot_obs[:, 0 : int(robot_obs.shape[1] / num_robots)]
+    print(next_obs.shape)
     next_obs = torch.Tensor(next_obs).to(device)
     next_obs = torch.reshape(
         next_obs,
         (1, int(flatdim(envs.single_observation_space) / num_robots)),
     )
-
-    next_obs_2 = robot_obs[
-        :, int(robot_obs.shape[1] / num_robots) : int(robot_obs.shape[1])
-    ]
-    # print(next_obs.shape)
-    next_obs_2 = torch.Tensor(next_obs_2).to(device)
-    next_obs_2 = torch.reshape(
-        next_obs_2,
-        (1, int(flatdim(envs.single_observation_space) / num_robots)),
-    )
-
+    next_obs_n = []
+    for i in range(num_robots-1):
+        next_obs_n.append(robot_obs[
+            :, 0 : int(robot_obs.shape[1] / num_robots)
+            ])
+        next_obs_n[i] = torch.Tensor(next_obs_n[i]).to(device)
+        next_obs_n[i] = torch.reshape(
+            next_obs_n[i],
+            (1, int(flatdim(envs.single_observation_space) / num_robots)),
+        )
     next_done = torch.zeros(1).to(device)
     done = 0
     inferring = 1
@@ -106,14 +108,17 @@ if __name__ == "__main__":
         # ALGO LOGIC: action logic
         with torch.no_grad():
             action, logprob, _, value = agent_1.get_action_and_value(next_obs)
-
-        action_2, logprob_2, _, value_2 = agent_2.get_action_and_value(next_obs_2)
-
+        action_n = [None for i in range(num_robots-1)]
+        logprob_n = [None for i in range(num_robots-1)] 
+        value_n = [None for i in range(num_robots-1)]
+        for i in range(num_robots-1):
+            action_n[i], logprob_n[i], _, value_n[i] = agents[i].get_action_and_value(next_obs_n[i])
+        
         pass_action = np.zeros(shape=(1, num_robots))
         for i in range(1):
             pass_action[i][0] = action[i]
             for j in range(num_robots - 1):
-                pass_action[i][j + 1] = action_2[i]  # second robot action
+                pass_action[i][j + 1] = action_n[j][i] # other robots actions
 
         pass_action = torch.from_numpy(pass_action)
 
@@ -132,19 +137,20 @@ if __name__ == "__main__":
             ),
         )
 
-        # get second robot observation
-        next_obs_2 = robot_obs[
-            :, int(robot_obs.shape[1] / num_robots) : int(robot_obs.shape[1])
-        ]
-        # print(next_obs.shape)
-        next_obs_2 = torch.Tensor(next_obs_2).to(device)
-        next_obs_2 = torch.reshape(
-            next_obs_2,
-            (
-                1,
-                int(flatdim(envs.single_observation_space) / num_robots),
-            ),
-        )
+        # get others robot observation
+        for i in range(num_robots-1):
+            next_obs_n[i] = robot_obs[
+            :,0: int(robot_obs.shape[1] / num_robots)
+            ]
+            # print(next_obs.shape)
+            next_obs_n[i] = torch.Tensor(next_obs_n[i]).to(device)
+            next_obs_n[i] = torch.reshape(
+                next_obs_n[i],
+                (
+                    1,
+                    int(flatdim(envs.single_observation_space) / num_robots),
+                ),
+            )
 
         if next_done.any():
 
@@ -156,7 +162,7 @@ if __name__ == "__main__":
 
             exploration_rate.append(info[0]["robot0"]["explored_rate"])
             
-            if len(path_len_robots["robot0"]) == 50:
+            if len(path_len_robots["robot0"]) == 10:
                 envs.close()
                 inferring = 0
 

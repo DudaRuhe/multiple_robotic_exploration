@@ -106,7 +106,7 @@ class TwoAgentsEnv(gym.Env):
                         ),
                     }
                 )
-                for i in range(2)
+                for i in range(self.num_robots)
             }
         )
      
@@ -565,7 +565,7 @@ class TwoAgentsEnv(gym.Env):
                 if self.grid_matrix[random_pos[0]][random_pos[1]] == 0:
                     is_wall = False
 
-        elif robotID == 1:
+        elif robotID >= 1:
             while is_wall:
                 random_pos = self.np_random.integers(
                     np.array([self.n_cells_x / 2, 0]),
@@ -626,8 +626,11 @@ class TwoAgentsEnv(gym.Env):
             )  # owner is robot
 
         # ROBOTS SHARING THEIR TRAJECTORY
-        self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
-        self.robots[0]._other_agents_trajectory = self.robots[1]._agent_trajectory
+        for i in range(self.num_robots):
+            if i == 0:
+                self.robots[i]._other_agents_trajectory = self.robots[1]._agent_trajectory
+            else:
+                self.robots[i]._other_agents_trajectory = self.robots[0]._agent_trajectory
 
         info = {}
         for i in range(self.num_robots):
@@ -655,11 +658,11 @@ class TwoAgentsEnv(gym.Env):
 
         self.global_steps += 1
 
-        i = 0
 
         add_pos = []
         observations = {"robot0": []}
-        new_regions = np.zeros(2)
+        info = {}
+        new_regions = np.zeros(self.num_robots)
 
         # first move all the robots
         for i in range(self.num_robots):
@@ -709,6 +712,8 @@ class TwoAgentsEnv(gym.Env):
 
         # SHARE TRAJECTORY BETWEEN ROBOTS
         self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
+        if self.num_robots==3:
+            self.robots[2]._other_agents_trajectory = self.robots[0]._agent_trajectory
         self.robots[0]._other_agents_trajectory = self.robots[1]._agent_trajectory
 
         # then measure all the lasers
@@ -734,17 +739,15 @@ class TwoAgentsEnv(gym.Env):
                     self.robots[0].n_collisions = False
 
             observation = self.robots[i]._get_obs()
+            info_robot = self.robots[i]._get_info()  # owner is robot
             # print(f"observation single robot = {observation}")
             robot_name = "robot" + str(i)
             observations[robot_name] = observation
+            info[robot_name] = info_robot
 
-        info = {}
-        info_robot_1 = self.robots[0]._get_info()  # owner is robot
-        info_robot_2 = self.robots[1]._get_info()
-        info["robot1"] = info_robot_1
-        info["robot2"] = info_robot_2
+       
         # info = self.robots[0]._get_info()
-        exploration_delta = self.robots[1].exploration_delta
+        #exploration_delta = self.robots[1].exploration_delta COMENTEI ISSO
 
         # this is done for the only robot that is training:
         # REWARDS AND DONE------------------------------------------------------
@@ -762,14 +765,15 @@ class TwoAgentsEnv(gym.Env):
             terminated = True
             # print("explored more than 93%")
         elif self.robots[0].exploration_delta > 0.0:
-            if (
-                self.robots[0].exploration_delta + self.robots[1].exploration_delta
-            ) / 2.0 > 20:
+            new_reward = 0.0
+            for i in range(self.num_robots):
+                new_reward += self.robots[i].exploration_delta
+            new_reward = new_reward/self.num_robots
+
+            if new_reward > 20:
                 reward = 20.0
             else:
-                reward = (
-                    self.robots[0].exploration_delta + self.robots[1].exploration_delta
-                ) / 2.0
+                reward = new_reward
         elif new_regions[0]:
             reward = self.reward_per_new_region
         else:

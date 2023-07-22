@@ -78,15 +78,19 @@ if __name__ == "__main__":
         # print(str(agent.state_dict()))
         # ------------------------------------------------------------------------
 
-    # AGENT 2------------------------------------------------------------
-    # AGENT 2 ONLY PERFORM INFERENCE. YOU CAN MAKE IT RANDOM, OR INITIALIZE IT WITH A TRAINED NETWORK
-    agent_2 = agent.Agent(envs).to(device)
-    if parameters["train"]["initialize_trained_agent_2"] == 1:
-        state_dict_agent_2 = torch.load(
-            parameters["train"]["agent_2_state_dict_path"],
-            map_location=device,
-        )
-        agent_2.load_state_dict(state_dict_agent_2)
+    # THE OTHERS AGENTS------------------------------------------------------------
+    # AGENT 2 TO N_ROBOTS ONLY PERFORM INFERENCE. YOU CAN MAKE IT RANDOM, OR INITIALIZE IT WITH A TRAINED NETWORK
+    agents = []
+    
+    for i in range(num_robots-1):
+        agents.append(agent.Agent(envs).to(device))
+        if parameters["train"]["initialize_trained_agent_2"] == 1:
+            state_dict_agents = torch.load(
+                parameters["train"]["agent_2_state_dict_path"],
+                map_location=device,
+            )
+            agents[i].load_state_dict(state_dict_agents)
+
     # ---------------------------------------------------------------------
 
     # ALGO Logic: Storage setup
@@ -118,14 +122,19 @@ if __name__ == "__main__":
         (num_envs, int(flatdim(envs.single_observation_space) / num_robots)),
     )
 
-    next_obs_2 = robot_obs[
-        :, int(robot_obs.shape[1] / num_robots) : int(robot_obs.shape[1])
-    ]
-    next_obs_2 = torch.Tensor(next_obs_2).to(device)
-    next_obs_2 = torch.reshape(
-        next_obs_2,
-        (num_envs, int(flatdim(envs.single_observation_space) / num_robots)),
-    )
+    next_obs_n = []
+    for i in range(num_robots-1):
+        next_obs_n.append(robot_obs[
+            :, 0 : int(robot_obs.shape[1] / num_robots)
+            ])
+        next_obs_n[i] = torch.Tensor(next_obs_n[i]).to(device)
+        next_obs_n[i] = torch.reshape(
+            next_obs_n[i],
+            (
+                num_envs,
+                int(flatdim(envs.single_observation_space) / num_robots),
+            ),
+        )
 
     next_done = torch.zeros(num_envs).to(device)
     num_updates = parameters["train"]["total_train_timesteps"] // batch_size
@@ -151,12 +160,17 @@ if __name__ == "__main__":
             logprobs[step] = logprob
 
             # GET AGENT 2 ACTION
-            action_2, logprob_2, _, value_2 = agent_2.get_action_and_value(next_obs_2)
+            action_n = [None for i in range(num_robots-1)]
+            logprob_n = [None for i in range(num_robots-1)] 
+            value_n = [None for i in range(num_robots-1)]
+            for i in range(num_robots-1):
+                action_n[i], logprob_n[i], _, value_n[i] = agents[i].get_action_and_value(next_obs_n[i])
+
             pass_action = np.zeros(shape=(num_envs, num_robots))
             for i in range(num_envs):
                 pass_action[i][0] = action[i]
                 for j in range(num_robots - 1):
-                    pass_action[i][j + 1] = action_2[i]  # second robot action
+                    pass_action[i][j + 1] = action_n[j][i]  # second robot action
 
             pass_action = torch.from_numpy(pass_action)
 
@@ -174,18 +188,19 @@ if __name__ == "__main__":
                 ),
             )
 
-            next_obs_2 = robot_obs[
-                :, int(robot_obs.shape[1] / num_robots) : int(robot_obs.shape[1])
-            ]
-            # print(next_obs.shape)
-            next_obs_2 = torch.Tensor(next_obs_2).to(device)
-            next_obs_2 = torch.reshape(
-                next_obs_2,
-                (
-                    num_envs,
-                    int(flatdim(envs.single_observation_space) / num_robots),
-                ),
-            )
+            for i in range(num_robots-1):
+                next_obs_n[i] = robot_obs[
+                :,0: int(robot_obs.shape[1] / num_robots)
+                ]
+                # print(next_obs.shape)
+                next_obs_n[i] = torch.Tensor(next_obs_n[i]).to(device)
+                next_obs_n[i] = torch.reshape(
+                    next_obs_n[i],
+                    (
+                        num_envs,
+                        int(flatdim(envs.single_observation_space) / num_robots),
+                    ),
+                )
 
             for item in info:
                 if type(item) == dict:
