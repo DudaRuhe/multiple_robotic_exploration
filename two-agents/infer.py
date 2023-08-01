@@ -76,7 +76,6 @@ if __name__ == "__main__":
 
     robot_obs, _ = envs.reset()
     next_obs = robot_obs[:, 0 : int(robot_obs.shape[1] / num_robots)]
-    print(next_obs.shape)
     next_obs = torch.Tensor(next_obs).to(device)
     next_obs = torch.reshape(
         next_obs,

@@ -4,7 +4,7 @@
         "seed": 1,
         "torch_deterministic": 1,
         "cuda": 1,
-	"num_robots": 3
+	"num_robots": 50
     },
     "visualization": {
         "visualization_window": "True",

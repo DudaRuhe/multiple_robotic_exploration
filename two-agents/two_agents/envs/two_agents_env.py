@@ -463,6 +463,7 @@ class TwoAgentsEnv(gym.Env):
             )
 
             # IS VISITED REGION NEW?-----------------------------------
+        
             all_visited_x = np.concatenate((self._visited_x, other_robot_visited_x))
             all_visited_y = np.concatenate((self._visited_y, other_robot_visited_y))
             new_region = True
@@ -627,10 +628,8 @@ class TwoAgentsEnv(gym.Env):
 
         # ROBOTS SHARING THEIR TRAJECTORY
         for i in range(self.num_robots):
-            if i == 0:
-                self.robots[i]._other_agents_trajectory = self.robots[1]._agent_trajectory
-            else:
-                self.robots[i]._other_agents_trajectory = self.robots[0]._agent_trajectory
+            self.robots[i]._other_agents_trajectory = self.update_others_trajectory(i)
+        
 
         info = {}
         for i in range(self.num_robots):
@@ -684,37 +683,34 @@ class TwoAgentsEnv(gym.Env):
 
             add_pos.append(curr_pos)
 
-            if i == 0:
-                # print("ROBOT 0")
-                new_regions[i] = self.robots[i].update_trajectory(
-                    self.n_trajectory_points,
-                    self.explored_radius,
-                    self.n_cells_x,
-                    self.n_cells_y,
-                    self.initial_free_cells,
-                    self.exploration_grid_matrix,
-                    self.robots[1]._visited_x,
-                    self.robots[1]._visited_y,
-                )
-            elif i >= 1:
-                # print("ROBOT 1")
-                new_regions[i] = self.robots[i].update_trajectory(
-                    self.n_trajectory_points,
-                    self.explored_radius,
-                    self.n_cells_x,
-                    self.n_cells_y,
-                    self.initial_free_cells,
-                    self.exploration_grid_matrix,
-                    self.robots[0]._visited_x,
-                    self.robots[0]._visited_y,
-                )
-        
+            others_visited_x = []
+            others_visited_y = []
+            for l in range(self.num_robots):
+                if l != i:
+                    if len(others_visited_x) == 0:
+                        others_visited_x = self.robots[l]._visited_x
+                        others_visited_y = self.robots[l]._visited_y
+                    else:
+                        others_visited_x = np.concatenate((others_visited_x ,self.robots[l]._visited_x))
+                        others_visited_y = np.concatenate((others_visited_y ,self.robots[l]._visited_y))
 
+            
+            #Check if it is a new region for each robot
+            new_regions[i] = self.robots[i].update_trajectory(
+                self.n_trajectory_points,
+                self.explored_radius,
+                self.n_cells_x,
+                self.n_cells_y,
+                self.initial_free_cells,
+                self.exploration_grid_matrix,
+                others_visited_x,
+                others_visited_y,
+            )
+
+        
         # SHARE TRAJECTORY BETWEEN ROBOTS
-        self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
-        if self.num_robots==3:
-            self.robots[2]._other_agents_trajectory = self.robots[0]._agent_trajectory
-        self.robots[0]._other_agents_trajectory = self.robots[1]._agent_trajectory
+        for i in range(self.num_robots):
+            self.robots[i]._other_agents_trajectory = self.update_others_trajectory(i)
 
         # then measure all the lasers
         for i in range(self.num_robots):
@@ -978,3 +974,26 @@ class TwoAgentsEnv(gym.Env):
     def seed(self, seed: int) -> None:
         random.seed(seed)
         np.random.seed
+
+    def update_others_trajectory(self, robot_Id):
+        others_robots_trajectorys = []
+        zero_array = np.array([[0,0]])
+        for i in range(self.num_robots):
+            if i != robot_Id:
+                #return self.robots[i]._agent_trajectory
+                if len(others_robots_trajectorys) == 0:
+                    others_robots_trajectorys = self.robots[i]._agent_trajectory
+                else:
+                    others_robots_trajectorys = np.concatenate((others_robots_trajectorys,self.robots[i]._agent_trajectory))
+
+        others_robots_trajectorys = np.unique(others_robots_trajectorys, axis=0) 
+
+        if len(others_robots_trajectorys) != 50:
+            while len(others_robots_trajectorys) < 50:
+                others_robots_trajectorys = np.concatenate((others_robots_trajectorys,zero_array))
+
+            while len(others_robots_trajectorys) > 50:
+                index = random.randrange(len(others_robots_trajectorys))
+                others_robots_trajectorys = np.delete(others_robots_trajectorys, index, axis=0)
+        
+        return others_robots_trajectorys
