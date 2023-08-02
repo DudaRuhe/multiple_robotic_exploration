@@ -3,7 +3,7 @@ import time
 from distutils.util import strtobool
 
 import gym
-import two_agents
+import multi_agents
 from gym.spaces.utils import flatdim
 import numpy as np
 import torch
