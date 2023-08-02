@@ -2,7 +2,7 @@ import random
 import time
 
 import gym
-import two_agents
+import multi_agents
 from gym.spaces.utils import flatdim
 import numpy as np
 import torch
@@ -22,10 +22,10 @@ if __name__ == "__main__":
 
     if parameters["train"]["finetune_agent_1"] == 1:
         run_name = (
-            f"two_robots_{parameters['map']['map_name']}_finetune_{int(time.time())}"
+            f"multi_robots_{parameters['map']['map_name']}_finetune_{int(time.time())}"
         )
     else:
-        run_name = f"two_robots_{parameters['map']['map_name']}_from_scratch_{int(time.time())}"
+        run_name = f"multi_robots_{parameters['map']['map_name']}_from_scratch_{int(time.time())}"
 
     writer = SummaryWriter(f"runs/{run_name}")
 
