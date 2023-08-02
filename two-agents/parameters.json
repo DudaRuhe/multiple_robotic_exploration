@@ -1,6 +1,6 @@
 {
     "env": {
-        "gym_id": "twoAgents-v0",
+        "gym_id": "multiAgents-v0",
         "seed": 1,
         "torch_deterministic": 1,
         "cuda": 1,
