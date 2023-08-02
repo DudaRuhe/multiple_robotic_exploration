@@ -7,7 +7,7 @@ from modules import trajectory
 import json
 
 
-class TwoAgentsEnv(gym.Env):
+class MultiAgentsEnv(gym.Env):
 
     with open(f"parameters.json", "r") as parameters_file:
         parameters = json.load(parameters_file)
