@@ -10,6 +10,8 @@ This is a continuation of Luiza Garaffa's masters work.
 ## How to use it
 1) Install the dependencies
 ```
+make sure your python version is 3.5
+```
 pip install gym
 ```
 ```
@@ -22,7 +24,6 @@ pip install torch
 pip install tensorboard
 ```
 ```
-
 pip install setuptools==59.5.0
 ```
 
