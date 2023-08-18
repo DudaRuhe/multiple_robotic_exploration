@@ -1,10 +1,9 @@
 {
     "env": {
-        "gym_id": "multiAgents-v0",
+        "gym_id": "singleAgent-v0",
         "seed": 1,
         "torch_deterministic": 1,
-        "cuda": 1,
-	    "num_robots": 2
+        "cuda": 1
     },
     "visualization": {
         "visualization_window": "True",
@@ -12,7 +11,7 @@
         "grid_lines": "True",
         "draw_trajectory": "True",
         "draw_agent": "True",
-        "FPS": 15
+        "FPS": 50
     },
     "map": {
         "pix_square_size": 20.0,
@@ -39,10 +38,8 @@
     "train": {
         "visualize_train": "True",
         "total_train_timesteps": 100000,
-        "finetune_agent_1": 0,
-        "initialize_trained_agent_2": 1,
-        "agent_1_state_dict_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
-        "agent_2_state_dict_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
+        "finetune": 0,
+        "state_dict_path": "trained_models/1_intermediate_room_collision_avoidance_50_other_traj_points_2M1668609422_state_dict",
         "learning_rate": 2.5e-4,
         "num_envs": 4,
         "num_steps": 128,
@@ -61,8 +58,7 @@
         "target_kl": "None"
     },
     "infer": {
-        "agent_1_model_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
-        "agent_2_model_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
+        "trained_model_path": "trained_models/1_intermediate_room_collision_avoidance_50_other_traj_points_2M1668609422_state_dict",
         "number_of_tests": 5
     }
 }
