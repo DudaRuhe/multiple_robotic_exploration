@@ -10,7 +10,7 @@ This is a continuation of Luiza Garaffa's masters work.
 ## How to use it
 1) Install the dependencies
 ```
-make sure your python version is 3.5
+make sure your python version is 3.5 or up
 ```
 ```
 pip install gym
