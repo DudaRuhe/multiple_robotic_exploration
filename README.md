@@ -12,6 +12,7 @@ This is a continuation of Luiza Garaffa's masters work.
 ```
 make sure your python version is 3.5
 ```
+```
 pip install gym
 ```
 ```
