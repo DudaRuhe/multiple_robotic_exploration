@@ -71,9 +71,21 @@ python infer.py
     <img src="https://user-images.githubusercontent.com/51202713/213886883-b6c54964-9e37-4017-b495-18e1ec3b89bb.gif" width="40%" height="40%" 
 </p>!
 
+
 <p align="center">
     <img src="https://user-images.githubusercontent.com/51202713/213887068-73803637-b2b3-49ac-80a9-f4a16df252be.gif" width="40%" height="40%" 
 </p>!
+
+## Cita-me
+Mais informação sobre a aplicação sobre a aplicação na dissertações e artigos abaixo:
+
+LUÍZA CAETANO GARAFFA, [Evaluation of mapless navigation for
+unknown indoor environment exploration
+by single and multiple autonomous mobile
+robots using Deep Reinforcement Learning.pdf](https://github.com/DudaRuhe/multiple_robotic_exploration/files/12431930/DissertacaoLuiza_AtualizadaEm29Nov.pdf)
+
+LUÍZA CAETANO GARAFFA, [Reinforcement Learning for Mobile Robotics
+Exploration: A Survey.pdf](https://github.com/DudaRuhe/multiple_robotic_exploration/files/12431964/%2B%2B.PPGC-Luiza.-.Survey.pdf)
 
 
 
