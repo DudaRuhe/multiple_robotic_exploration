@@ -7,7 +7,7 @@ from modules import trajectory
 import json
 
 
-class MultiAgentsEnv(gym.Env):
+class TwoAgentsEnv(gym.Env):
 
     with open(f"parameters.json", "r") as parameters_file:
         parameters = json.load(parameters_file)
@@ -17,7 +17,7 @@ class MultiAgentsEnv(gym.Env):
         "render_fps": parameters["visualization"]["FPS"],
     }
 
-    def __init__(self, render_mode=None, idx=None,num_robots=None):
+    def __init__(self, render_mode=None, idx=None, num_robots=2):
 
         with open(f"parameters.json", "r") as parameters_file:
             parameters = json.load(parameters_file)
@@ -71,20 +71,17 @@ class MultiAgentsEnv(gym.Env):
         self.explored_rate = 0.0  # goes to robot
         self.global_steps = 0.0  # goes to robot
         self.episode = 0
-        self.num_robots = parameters["env"]["num_robots"]
-        
+        self.num_robots = num_robots
 
         max_bound = self.n_cells_x
         if self.n_cells_y > self.n_cells_x:
             max_bound = self.n_cells_y
 
-        robot_names = []
-        for i in range(self.num_robots):
-                robot_names.append("robot"+str(i))
-	
+        robot_name = "robot0"
+        robot_name1 = "robot1"
         self.observation_space = spaces.Dict(
             {
-                robot_names[i]: spaces.Dict(
+                robot_name: spaces.Dict(
                     {
                         "proximity_regions": spaces.Box(
                             low=1.0,
@@ -105,11 +102,31 @@ class MultiAgentsEnv(gym.Env):
                             dtype=int,
                         ),
                     }
-                )
-                for i in range(self.num_robots)
+                ),
+                robot_name1: spaces.Dict(
+                    {
+                        "proximity_regions": spaces.Box(
+                            low=1.0,
+                            high=4.0,
+                            shape=(self.n_proximity_regions,),
+                            dtype=int,
+                        ),
+                        "trajectory": spaces.Box(
+                            low=-max_bound - 1,
+                            high=max_bound - 1,
+                            shape=(self.n_trajectory_points, 2),
+                            dtype=int,
+                        ),
+                        "other_robots_trajectories": spaces.Box(
+                            low=-max_bound - 1,
+                            high=max_bound - 1,
+                            shape=(self.n_others_trajectory_points, 2),
+                            dtype=int,
+                        ),
+                    }
+                ),
             }
         )
-     
         # We have 4 actions, corresponding to "right", "up", "left", "down"
         self.action_space = spaces.Discrete(4)
 
@@ -463,7 +480,6 @@ class MultiAgentsEnv(gym.Env):
             )
 
             # IS VISITED REGION NEW?-----------------------------------
-        
             all_visited_x = np.concatenate((self._visited_x, other_robot_visited_x))
             all_visited_y = np.concatenate((self._visited_y, other_robot_visited_y))
             new_region = True
@@ -566,7 +582,7 @@ class MultiAgentsEnv(gym.Env):
                 if self.grid_matrix[random_pos[0]][random_pos[1]] == 0:
                     is_wall = False
 
-        elif robotID >= 1:
+        elif robotID == 1:
             while is_wall:
                 random_pos = self.np_random.integers(
                     np.array([self.n_cells_x / 2, 0]),
@@ -627,24 +643,26 @@ class MultiAgentsEnv(gym.Env):
             )  # owner is robot
 
         # ROBOTS SHARING THEIR TRAJECTORY
-        for i in range(self.num_robots):
-            self.robots[i]._other_agents_trajectory = self.update_others_trajectory(i)
-        
+        self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
+        self.robots[0]._other_agents_trajectory = self.robots[1]._agent_trajectory
 
-        info = {}
         for i in range(self.num_robots):
             self.robots[i]._get_laser_measurements(
                 self.grid_matrix, self.n_cells_x, self.n_cells_y
             )  # owner is robot
 
             observation = self.robots[i]._get_obs()  # owner is robot
-            info_robot = self.robots[i]._get_info()  # owner is robot
             robot_name = "robot" + str(i)
             observations[robot_name] = observation
-            info[robot_name] = info_robot
-            self.robots[i].n_steps = 0
 
-     
+        info = {}
+        info_robot_1 = self.robots[0]._get_info()  # owner is robot
+        info_robot_2 = self.robots[1]._get_info()
+        info["robot1"] = info_robot_1
+        info["robot2"] = info_robot_2
+
+        self.robots[0].n_steps = 0
+        self.robots[1].n_steps = 0
 
         if self.render_mode == "human":
             self._render_frame()
@@ -657,11 +675,11 @@ class MultiAgentsEnv(gym.Env):
 
         self.global_steps += 1
 
+        i = 0
 
         add_pos = []
         observations = {"robot0": []}
-        info = {}
-        new_regions = np.zeros(self.num_robots)
+        new_regions = np.zeros(2)
 
         # first move all the robots
         for i in range(self.num_robots):
@@ -683,34 +701,34 @@ class MultiAgentsEnv(gym.Env):
 
             add_pos.append(curr_pos)
 
-            others_visited_x = []
-            others_visited_y = []
-            for l in range(self.num_robots):
-                if l != i:
-                    if len(others_visited_x) == 0:
-                        others_visited_x = self.robots[l]._visited_x
-                        others_visited_y = self.robots[l]._visited_y
-                    else:
-                        others_visited_x = np.concatenate((others_visited_x ,self.robots[l]._visited_x))
-                        others_visited_y = np.concatenate((others_visited_y ,self.robots[l]._visited_y))
+            if i == 0:
+                # print("ROBOT 0")
+                new_regions[i] = self.robots[i].update_trajectory(
+                    self.n_trajectory_points,
+                    self.explored_radius,
+                    self.n_cells_x,
+                    self.n_cells_y,
+                    self.initial_free_cells,
+                    self.exploration_grid_matrix,
+                    self.robots[1]._visited_x,
+                    self.robots[1]._visited_y,
+                )
+            elif i == 1:
+                # print("ROBOT 1")
+                new_regions[i] = self.robots[i].update_trajectory(
+                    self.n_trajectory_points,
+                    self.explored_radius,
+                    self.n_cells_x,
+                    self.n_cells_y,
+                    self.initial_free_cells,
+                    self.exploration_grid_matrix,
+                    self.robots[0]._visited_x,
+                    self.robots[0]._visited_y,
+                )
 
-            
-            #Check if it is a new region for each robot
-            new_regions[i] = self.robots[i].update_trajectory(
-                self.n_trajectory_points,
-                self.explored_radius,
-                self.n_cells_x,
-                self.n_cells_y,
-                self.initial_free_cells,
-                self.exploration_grid_matrix,
-                others_visited_x,
-                others_visited_y,
-            )
-
-        
         # SHARE TRAJECTORY BETWEEN ROBOTS
-        for i in range(self.num_robots):
-            self.robots[i]._other_agents_trajectory = self.update_others_trajectory(i)
+        self.robots[1]._other_agents_trajectory = self.robots[0]._agent_trajectory
+        self.robots[0]._other_agents_trajectory = self.robots[1]._agent_trajectory
 
         # then measure all the lasers
         for i in range(self.num_robots):
@@ -735,15 +753,17 @@ class MultiAgentsEnv(gym.Env):
                     self.robots[0].n_collisions = False
 
             observation = self.robots[i]._get_obs()
-            info_robot = self.robots[i]._get_info()  # owner is robot
             # print(f"observation single robot = {observation}")
             robot_name = "robot" + str(i)
             observations[robot_name] = observation
-            info[robot_name] = info_robot
 
-       
+        info = {}
+        info_robot_1 = self.robots[0]._get_info()  # owner is robot
+        info_robot_2 = self.robots[1]._get_info()
+        info["robot1"] = info_robot_1
+        info["robot2"] = info_robot_2
         # info = self.robots[0]._get_info()
-        #exploration_delta = self.robots[1].exploration_delta COMENTEI ISSO
+        exploration_delta = self.robots[1].exploration_delta
 
         # this is done for the only robot that is training:
         # REWARDS AND DONE------------------------------------------------------
@@ -761,15 +781,14 @@ class MultiAgentsEnv(gym.Env):
             terminated = True
             # print("explored more than 93%")
         elif self.robots[0].exploration_delta > 0.0:
-            new_reward = 0.0
-            for i in range(self.num_robots):
-                new_reward += self.robots[i].exploration_delta
-            new_reward = new_reward/self.num_robots
-
-            if new_reward > 20:
+            if (
+                self.robots[0].exploration_delta + self.robots[1].exploration_delta
+            ) / 2.0 > 20:
                 reward = 20.0
             else:
-                reward = new_reward
+                reward = (
+                    self.robots[0].exploration_delta + self.robots[1].exploration_delta
+                ) / 2.0
         elif new_regions[0]:
             reward = self.reward_per_new_region
         else:
@@ -974,26 +993,3 @@ class MultiAgentsEnv(gym.Env):
     def seed(self, seed: int) -> None:
         random.seed(seed)
         np.random.seed
-
-    def update_others_trajectory(self, robot_Id):
-        others_robots_trajectorys = []
-        zero_array = np.array([[0,0]])
-        for i in range(self.num_robots):
-            if i != robot_Id:
-                #return self.robots[i]._agent_trajectory
-                if len(others_robots_trajectorys) == 0:
-                    others_robots_trajectorys = self.robots[i]._agent_trajectory
-                else:
-                    others_robots_trajectorys = np.concatenate((others_robots_trajectorys,self.robots[i]._agent_trajectory))
-
-        others_robots_trajectorys = np.unique(others_robots_trajectorys, axis=0) 
-
-        if len(others_robots_trajectorys) != 50:
-            while len(others_robots_trajectorys) < 50:
-                others_robots_trajectorys = np.concatenate((others_robots_trajectorys,zero_array))
-
-            while len(others_robots_trajectorys) > 50:
-                index = random.randrange(len(others_robots_trajectorys))
-                others_robots_trajectorys = np.delete(others_robots_trajectorys, index, axis=0)
-        
-        return others_robots_trajectorys

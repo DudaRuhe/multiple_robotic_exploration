@@ -1,10 +1,9 @@
 {
     "env": {
-        "gym_id": "multiAgents-v0",
+        "gym_id": "twoAgents-v0",
         "seed": 1,
         "torch_deterministic": 1,
-        "cuda": 1,
-	"num_robots": 50
+        "cuda": 1
     },
     "visualization": {
         "visualization_window": "True",
@@ -38,7 +37,7 @@
     },
     "train": {
         "visualize_train": "True",
-        "total_train_timesteps": 1000,
+        "total_train_timesteps": 100000,
         "finetune_agent_1": 0,
         "initialize_trained_agent_2": 1,
         "agent_1_state_dict_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",

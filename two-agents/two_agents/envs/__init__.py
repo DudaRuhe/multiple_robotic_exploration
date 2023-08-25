@@ -1,1 +1,1 @@
-from multi_agents.envs.multi_agents_env import MultiAgentsEnv
+from two_agents.envs.two_agents_env import TwoAgentsEnv

@@ -1,6 +1,5 @@
 import torch.nn as nn
 import numpy as np
-import json
 from gym.spaces.utils import flatdim
 from torch.distributions.categorical import Categorical
 
@@ -13,11 +12,7 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
 
 class Agent(nn.Module):
     def __init__(self, envs):
-
-        with open(f"parameters.json", "r") as parameters_file:
-            parameters = json.load(parameters_file)
-
-        num_robots = parameters["env"]["num_robots"]
+        num_robots = 2
         super(Agent, self).__init__()
         self.critic = nn.Sequential(
             layer_init(
