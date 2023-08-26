@@ -39,7 +39,7 @@ cd multiple_agents
 4) Configure the parameters in the `parameters.json` file
 5) To train a new model, run:
 ```
-python train.py
+python ppo_train.py
 ```
 6) To perform inference with a single agent with an already trained model, make sure the model is saved in the trained_models folder, than run:
 ```
