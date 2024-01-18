@@ -4,20 +4,20 @@
         "seed": 1,
         "torch_deterministic": 1,
         "cuda": 1,
-	    "num_robots": 2
+	    "num_robots": 4
     },
     "visualization": {
-        "visualization_window": "True",
-        "draw_lasers": "True",
-        "grid_lines": "True",
-        "draw_trajectory": "True",
-        "draw_agent": "True",
-        "FPS": 15
+        "visualization_window": "False",
+        "draw_lasers": "False",
+        "grid_lines": "False",
+        "draw_trajectory": "False",
+        "draw_agent": "False",
+        "FPS": 50
     },
     "map": {
         "pix_square_size": 20.0,
-        "map_file_path": "../maps/train_map.bmp",
-        "map_name": "train_map"
+        "map_file_path": "../maps/test_1_map.bmp",
+        "map_name": "teste1_mapa4_10M"
     },
     "reward": {
         "max_penalty": -100.0,
@@ -28,7 +28,7 @@
     },
     "done_criteria": {
         "max_exploration_rate": 0.93,
-        "max_steps": 300
+        "max_steps": 200
     },
     "agent": {
         "n_proximity_regions": 4,
@@ -38,12 +38,12 @@
     },
     "train": {
         "visualize_train": "True",
-        "total_train_timesteps": 100000,
-        "finetune_agent_1": 0,
+        "total_train_timesteps": 10000000,
+        "finetune_agent_1": 1,
         "initialize_trained_agent_2": 1,
-        "agent_1_state_dict_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
-        "agent_2_state_dict_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
-        "learning_rate": 2.5e-4,
+        "agent_1_state_dict_path": "trained_models/5Mtrainmap1_bestdistance_from_scratch_1704849719_state_dict",
+        "agent_2_state_dict_path": "trained_models/5Mtrainmap1_bestdistance_from_scratch_1704849719_state_dict",
+        "learning_rate": 2.5e-3,
         "num_envs": 4,
         "num_steps": 128,
         "num_minibatches": 4,
@@ -61,8 +61,8 @@
         "target_kl": "None"
     },
     "infer": {
-        "agent_1_model_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
-        "agent_2_model_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
-        "number_of_tests": 5
+        "agent_1_model_path": "trained_models/multi_robots_Numb10_teste_10robos_finetune_1705367401_state_dict",
+        "agent_2_model_path": "trained_models/multi_robots_Numb10_teste_10robos_finetune_1705367401_state_dict",
+        "number_of_tests": 50
     }
 }

@@ -10,6 +10,8 @@ def make_env(gym_id, seed, idx, visualization, num_robots):
                 )
             else:
                 env = gym.make(gym_id, idx=idx, num_robots=num_robots)
+        else:
+            env = gym.make(gym_id, idx=idx, num_robots=num_robots)
         env = gym.wrappers.FlattenObservation(env)
         env.seed(seed)
         env.action_space.seed(seed)

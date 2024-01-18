@@ -15,19 +15,19 @@
     },
     "map": {
         "pix_square_size": 20.0,
-        "map_file_path": "../maps/train_map.bmp",
-        "map_name": "train_map"
+        "map_file_path": "../maps/intermediate_room.bmp",
+        "map_name": "simplemazeteste3"
     },
     "reward": {
-        "max_penalty": -100.0,
+        "max_penalty": -1.0,
         "max_reward": 100.0,
-        "reward_per_new_region": -1.0,
-        "penalty_per_old_region": -5.0,
-        "divide_delta": 1.0
+        "reward_per_new_region": -0.1,
+        "penalty_per_old_region": -0.1,
+        "divide_delta": 0.0
     },
     "done_criteria": {
-        "max_exploration_rate": 0.93,
-        "max_steps": 300
+        "max_exploration_rate": 1,
+        "max_steps": 200
     },
     "agent": {
         "n_proximity_regions": 4,
@@ -37,10 +37,10 @@
     },
     "train": {
         "visualize_train": "True",
-        "total_train_timesteps": 100000,
-        "finetune": 0,
-        "state_dict_path": "trained_models/1_intermediate_room_collision_avoidance_50_other_traj_points_2M1668609422_state_dict",
-        "learning_rate": 2.5e-4,
+        "total_train_timesteps": 150000,
+        "finetune": 1,
+        "state_dict_path": "trained_models/1_intermediate_room_exploration_from_scratch_50_other_traj_points_10M1668603082_state_dict",
+        "learning_rate": 2.5e-3,
         "num_envs": 4,
         "num_steps": 128,
         "num_minibatches": 4,

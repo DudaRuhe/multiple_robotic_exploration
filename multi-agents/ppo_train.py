@@ -22,10 +22,10 @@ if __name__ == "__main__":
 
     if parameters["train"]["finetune_agent_1"] == 1:
         run_name = (
-            f"multi_robots_{parameters['map']['map_name']}_finetune_{int(time.time())}"
+            f"multi_robots_Numb{num_robots}_{parameters['map']['map_name']}_finetune_{int(time.time())}"
         )
     else:
-        run_name = f"multi_robots_{parameters['map']['map_name']}_from_scratch_{int(time.time())}"
+        run_name = f"multi_robots_Numb{num_robots}_{parameters['map']['map_name']}_from_scratch_{int(time.time())}"
 
     writer = SummaryWriter(f"runs/{run_name}")
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     optimizer = optim.Adam(
         agent_1.parameters(), lr=parameters["train"]["learning_rate"], eps=1e-5
     )
-
+    
     if parameters["train"]["finetune_agent_1"] == 1:
         state_dict_agent_1 = torch.load(
             parameters["train"]["agent_1_state_dict_path"],
@@ -93,7 +93,6 @@ if __name__ == "__main__":
             agents[i].load_state_dict(state_dict_agents)
 
     # ---------------------------------------------------------------------
-
     # ALGO Logic: Storage setup
     num_envs = parameters["train"]["num_envs"]
     num_steps = parameters["train"]["num_steps"]
@@ -138,7 +137,7 @@ if __name__ == "__main__":
         )
 
     next_done = torch.zeros(num_envs).to(device)
-    print(next_done)
+  
     num_updates = parameters["train"]["total_train_timesteps"] // batch_size
     n_episodes = 0
 
@@ -176,8 +175,9 @@ if __name__ == "__main__":
                     pass_action[i][j + 1] = action_n[j][i]  # second robot action
 
             pass_action = torch.from_numpy(pass_action)
-
+    
             robot_obs, reward, done, _, info = envs.step(pass_action.cpu().numpy())
+            
             next_obs = robot_obs[:, 0 : int(robot_obs.shape[1] / num_robots)]
             rewards[step] = torch.tensor(reward).to(device).view(-1)
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(
@@ -382,5 +382,6 @@ if __name__ == "__main__":
 
     # print(str(agent.state_dict()))
     torch.save(agent_1.state_dict(), f"trained_models/{run_name}_state_dict")
+    print("ACABOU")
     envs.close()
     writer.close()

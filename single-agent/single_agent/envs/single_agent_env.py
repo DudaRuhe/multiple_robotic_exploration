@@ -502,10 +502,9 @@ class SingleAgentEnv(gym.Env):
             self.collision = False
 
         info = self._get_info()
-
+        explorar = True
         terminated = False
-        if self.n_steps > self.max_steps_to_done:
-            terminated = True
+        
 
         if self.collision:
             reward = self.max_penalty

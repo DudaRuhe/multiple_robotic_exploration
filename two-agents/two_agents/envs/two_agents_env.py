@@ -780,15 +780,15 @@ class TwoAgentsEnv(gym.Env):
             reward = self.max_reward
             terminated = True
             # print("explored more than 93%")
-        elif self.robots[0].exploration_delta > 0.0:
+        elif self.robots[0].exploration_delta > 0.0 or self.robots[1].exploration_delta > 0.0:
             if (
                 self.robots[0].exploration_delta + self.robots[1].exploration_delta
             ) / 2.0 > 20:
                 reward = 20.0
             else:
                 reward = (
-                    self.robots[0].exploration_delta + self.robots[1].exploration_delta
-                ) / 2.0
+                self.robots[0].exploration_delta + self.robots[1].exploration_delta
+            ) / 2.0
         elif new_regions[0]:
             reward = self.reward_per_new_region
         else:

@@ -16,6 +16,7 @@ if __name__ == "__main__":
         parameters = json.load(parameters_file)
 
     num_robots = parameters["env"]["num_robots"]
+    num_tests = parameters["infer"]["number_of_tests"]
     
     # TRY NOT TO MODIFY: seeding
     seed = parameters["env"]["seed"]
@@ -161,7 +162,7 @@ if __name__ == "__main__":
 
             exploration_rate.append(info[0]["robot0"]["explored_rate"])
             
-            if len(path_len_robots["robot0"]) == 10:
+            if len(path_len_robots["robot0"]) == num_tests:
                 envs.close()
                 inferring = 0
 

@@ -364,5 +364,6 @@ if __name__ == "__main__":
 
     # print(str(agent.state_dict()))
     torch.save(agent_1.state_dict(), f"trained_models/{run_name}_state_dict")
+    print("ACABOU!")
     envs.close()
     writer.close()

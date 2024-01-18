@@ -725,6 +725,8 @@ class MultiAgentsEnv(gym.Env):
             robot_lasers = self.robots[i]._get_laser_measurements(
                 colider_matrix, self.n_cells_x, self.n_cells_y
             )
+            if any(robot_lasers == 4):
+                    collision = True 
             if i == 0:
                 if any(robot_lasers == 4):
                     collision = True
@@ -747,6 +749,7 @@ class MultiAgentsEnv(gym.Env):
         # this is done for the only robot that is training:
         # REWARDS AND DONE------------------------------------------------------
         terminated = False
+        
         if collision:
             reward = self.max_penalty
             terminated = True
@@ -759,14 +762,13 @@ class MultiAgentsEnv(gym.Env):
             reward = self.max_reward
             terminated = True
             # print("explored more than 93%")
-        elif self.robots[0].exploration_delta > 0.0:
+        elif self.robots[0].exploration_delta > 0 or self.robots[1].exploration_delta > 0 or self.robots[2].exploration_delta > 0 or self.robots[3].exploration_delta >0:
             new_reward = 0.0
             for i in range(self.num_robots):
                 new_reward += self.robots[i].exploration_delta
             new_reward = new_reward/self.num_robots
-
-            if new_reward > 20:
-                reward = 20.0
+            if new_reward > 10*self.num_robots:
+                reward = 10*self.num_robots
             else:
                 reward = new_reward
         elif new_regions[0]:
@@ -775,7 +777,7 @@ class MultiAgentsEnv(gym.Env):
             reward = self.penalty_per_old_region
         if self.render_mode == "human":
             self._render_frame()
-
+        
         return observations, reward, terminated, False, info
 
     def render(self):
