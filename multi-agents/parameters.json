@@ -4,20 +4,20 @@
         "seed": 1,
         "torch_deterministic": 1,
         "cuda": 1,
-	    "num_robots": 4
+	    "num_robots": 8
     },
     "visualization": {
-        "visualization_window": "False",
-        "draw_lasers": "False",
-        "grid_lines": "False",
-        "draw_trajectory": "False",
-        "draw_agent": "False",
-        "FPS": 50
+        "visualization_window": "True",
+        "draw_lasers": "True",
+        "grid_lines": "True",
+        "draw_trajectory": "True",
+        "draw_agent": "True",
+        "FPS": 10
     },
     "map": {
-        "pix_square_size": 20.0,
+        "pix_square_size": 13.3,
         "map_file_path": "../maps/test_1_map.bmp",
-        "map_name": "teste1_mapa4_10M"
+        "map_name": "4quarto_1M"
     },
     "reward": {
         "max_penalty": -100.0,
@@ -27,7 +27,7 @@
         "divide_delta": 1.0
     },
     "done_criteria": {
-        "max_exploration_rate": 0.93,
+        "max_exploration_rate": 0.98,
         "max_steps": 200
     },
     "agent": {
@@ -36,13 +36,13 @@
         "n_trajectory_points": 50,
         "n_others_trajectory_points": 50
     },
-    "train": {
+     "train": {
         "visualize_train": "True",
-        "total_train_timesteps": 10000000,
+        "total_train_timesteps": 2500000,
         "finetune_agent_1": 1,
         "initialize_trained_agent_2": 1,
-        "agent_1_state_dict_path": "trained_models/5Mtrainmap1_bestdistance_from_scratch_1704849719_state_dict",
-        "agent_2_state_dict_path": "trained_models/5Mtrainmap1_bestdistance_from_scratch_1704849719_state_dict",
+        "agent_1_state_dict_path": "trained_models/multi_robots_Numb4_4terceiro_1M_finetune_1707742801_state_dict",
+        "agent_2_state_dict_path": "trained_models/multi_robots_Numb6_mapa6_10M_finetune_1705753456_state_dict",
         "learning_rate": 2.5e-3,
         "num_envs": 4,
         "num_steps": 128,
@@ -61,8 +61,8 @@
         "target_kl": "None"
     },
     "infer": {
-        "agent_1_model_path": "trained_models/multi_robots_Numb10_teste_10robos_finetune_1705367401_state_dict",
-        "agent_2_model_path": "trained_models/multi_robots_Numb10_teste_10robos_finetune_1705367401_state_dict",
+        "agent_1_model_path": "trained_models/two_robots_mapa2_10M_finetune_1705673957_state_dict",
+        "agent_2_model_path": "trained_models/multi_robots_Numb6_mapa6_10M_finetune_1705753456_state_dict",
         "number_of_tests": 50
     }
 }
