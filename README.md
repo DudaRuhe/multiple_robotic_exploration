@@ -79,6 +79,12 @@ python infer.py
 ## Cita-me
 Mais informação sobre a aplicação sobre a aplicação na dissertações e artigos abaixo:
 
+MARIA EDUARDA NOTHEN RUHE, [Avaliação da navegação sem mapeamento
+para exploração de ambientes internos
+desconhecidos por múltiplos robôs móveis
+autônomos usando Aprendizagem por
+Reforço](https://github.com/DudaRuhe/multiple_robotic_exploration/files/14376639/TCC_MARIA_EDUARDA_NOTHEN_RUHE.pdf)
+
 LUÍZA CAETANO GARAFFA, [Evaluation of mapless navigation for
 unknown indoor environment exploration
 by single and multiple autonomous mobile
